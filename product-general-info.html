@@ -1869,15 +1869,15 @@
 
       <!-- Gallery + Product options -->
    <section class="container pb-5 mb-1 mb-sm-2 mb-md-3 mb-lg-4 mb-xl-5">
-        <div class="row" id="product-main-section">
-            <!-- JS will inject gallery and purchase options here -->
-            <div class="col-12 d-flex justify-content-center py-5">
-                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        </div>
-      </section>
+      <div class="row" id="product-main-section">
+          <!-- Product gallery and options will be dynamically loaded here -->
+          <div class="col-12 text-center p-5">
+              <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+              </div>
+          </div>
+      </div>
+    </section>
 
   <!-- Product details and Reviews shared container -->
       <section class="container pb-5 mb-2 mb-md-3 mb-lg-4 mb-xl-5">
@@ -1896,6 +1896,24 @@
       </section>
 
       <!-- Other sections like "Trending products" can remain here -->
+ <!-- Trending products (Carousel) -->
+ <section class="container pb-4 pb-md-5 mb-2 mb-sm-0 mb-lg-2 mb-xl-4">
+      <h2 class="h3 border-bottom pb-4 mb-0">Trending products</h2>
+      <div class="position-relative mx-md-1">
+        <button type="button" class="trending-prev btn btn-prev btn-icon btn-outline-secondary bg-body rounded-circle animate-slide-start position-absolute top-50 start-0 z-2 translate-middle-y ms-n1 d-none d-sm-inline-flex" aria-label="Prev">
+          <i class="ci-chevron-left fs-lg animate-target"></i>
+        </button>
+        <button type="button" class="trending-next btn btn-next btn-icon btn-outline-secondary bg-body rounded-circle animate-slide-end position-absolute top-50 end-0 z-2 translate-middle-y me-n1 d-none d-sm-inline-flex" aria-label="Next">
+          <i class="ci-chevron-right fs-lg animate-target"></i>
+        </button>
+        <div class="swiper py-4 px-sm-3" id="trending-swiper">
+          <div id="trending-products-wrapper" class="swiper-wrapper">
+             <!-- Trending products will be dynamically loaded here -->
+          </div>
+        </div>
+      </div>
+    </section>
+
     </main>
 
 
@@ -2164,185 +2182,289 @@
     <script src="assets/vendor/simplebar/dist/simplebar.min.js"></script>
     <script src="assets/vendor/choices.js/public/assets/scripts/choices.min.js"></script>
 
-    <!-- Bootstrap + Theme scripts -->
-<script>
-      function showNotification(message, isError = false) {
-          const toast = document.getElementById('toast-notification');
-          toast.textContent = message;
-          toast.className = 'toast-notification ' + (isError ? 'error' : 'success') + ' show';
-          setTimeout(() => { toast.classList.remove('show'); }, 3000);
-      }
-      function getToken() { return localStorage.getItem('authToken'); }
+  <!-- Bootstrap + Theme scripts -->
+  <script src="assets/js/theme.min.js"></script>
 
-      async function addToCart(productId, quantity = 1) {
-          const token = getToken();
-          if (!token) {
-              showNotification('You must be logged in to add items to the cart.', true);
-              return;
-          }
-          try {
-              const response = await fetch('http://localhost:3000/api/cart', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                  body: JSON.stringify({ productId, quantity })
-              });
-              if (response.ok) {
-                  showNotification('Product added to cart successfully!');
-              } else {
-                  const errorData = await response.json();
-                  throw new Error(errorData.error || 'Failed to add item to cart.');
-              }
-          } catch (error) {
-              console.error('Add to cart error:', error);
-              showNotification(`Error: ${error.message}`, true);
-          }
-      }
-      function addToWishlist(productId) {
-        showNotification(`Add to Wishlist is not implemented yet. Product ID: ${productId}`, true);
-      }
+<!-- Custom App Logic -->
+<!-- Custom App Logic -->
+<!-- Custom App Logic -->
+  <script>
+    function showNotification(message, isError = false) {
+        const toast = document.getElementById('toast-notification');
+        toast.textContent = message;
+        toast.className = 'toast-notification ' + (isError ? 'error' : 'success') + ' show';
+        setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    }
+    function getToken() { return localStorage.getItem('authToken'); }
 
-      document.addEventListener('DOMContentLoaded', () => {
-          const urlParams = new URLSearchParams(window.location.search);
-          const sku = urlParams.get('sku');
-          if (sku) {
-              fetchProductDetails(sku);
-          } else {
-              const container = document.getElementById('product-main-section');
-              container.innerHTML = '<p class="text-danger text-center col-12">No product SKU specified.</p>';
-              document.getElementById('product-name').textContent = 'Product Not Found';
-          }
-      });
+    async function addToCart(productId, quantity = 1) {
+        const token = getToken();
+        if (!token) {
+            showNotification('You must be logged in to add items to the cart.', true);
+            return;
+        }
+        try {
+            const response = await fetch('http://localhost:3000/api/cart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ productId, quantity: parseInt(quantity) })
+            });
+            if (response.ok) {
+                showNotification('Product added to cart successfully!');
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to add item to cart.');
+            }
+        } catch (error) {
+            console.error('Add to cart error:', error);
+            showNotification(`Error: ${error.message}`, true);
+        }
+    }
+    function addToWishlist(productId) {
+      showNotification(`Add to Wishlist is not implemented yet. Product ID: ${productId}`, true);
+    }
 
-      async function fetchProductDetails(sku) {
-          const mainContainer = document.getElementById('product-main-section');
-          const infoContainer = document.getElementById('product-info-col');
-          const stickyPreviewContainer = document.getElementById('sticky-preview');
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const sku = urlParams.get('sku');
+        if (sku) {
+            fetchProductDetails(sku);
+        } else {
+            const container = document.getElementById('product-main-section');
+            container.innerHTML = '<p class="text-danger text-center col-12">No product SKU specified.</p>';
+            document.getElementById('product-name').textContent = 'Product Not Found';
+        }
+        fetchTrendingProducts();
+    });
 
-          try {
-              const response = await fetch(`http://localhost:3000/api/products/${sku}`);
-              if (!response.ok) throw new Error('Product not found or server error.');
-              
-              const product = await response.json();
-
-              document.title = `Kids Shop | ${product.name}`;
-              document.getElementById('product-name').textContent = product.name;
-              document.getElementById('breadcrumb-product-name').textContent = product.name;
-
-              const descriptionHtml = product.description || 'No description available.';
-              
-              const allImages = [...(product.image_urls ? product.image_urls.split(' ').filter(url => url) : [])];
-              const uniqueImages = [...new Set(allImages)].length > 0 ? [...new Set(allImages)] : ['https://via.placeholder.com/500x500?text=No+Image'];
-              
-              let galleryHtml = '';
-              let thumbsHtml = '';
-              uniqueImages.forEach(imgUrl => {
-                  galleryHtml += `<div class="swiper-slide"><div class="ratio ratio-1x1"><img src="${imgUrl}" alt="${product.name}"></div></div>`;
-                  thumbsHtml += `<div class="swiper-slide swiper-thumb"><div class="ratio ratio-1x1" style="max-width: 94px"><img src="${imgUrl}" class="swiper-thumb-img" alt="Thumbnail"></div></div>`;
-              });
-
-              const price = parseFloat(product.price);
-              const suggestedPrice = parseFloat(product.suggested_price);
-              const priceHtml = suggestedPrice > price
-                  ? `<div class="h4 mb-0 me-3">${price.toFixed(2)} zł</div><del class="text-body-tertiary fs-lg">${suggestedPrice.toFixed(2)} zł</del>`
-                  : `<div class="h4 mb-0 me-3">${price.toFixed(2)} zł</div>`;
-              const stockStatusHtml = product.stock_quantity > 0
-                  ? `<div class="d-flex align-items-center text-success fs-sm ms-auto"><i class="ci-check-circle fs-base me-2"></i>Available (${product.stock_quantity})</div>`
-                  : `<div class="d-flex align-items-center text-danger fs-sm ms-auto"><i class="ci-close-circle fs-base me-2"></i>Out of stock</div>`;
-
-              mainContainer.innerHTML = `
-                  <div class="col-md-6">
-                      <div class="swiper" data-swiper='{"loop": true, "navigation": {"prevEl": ".btn-prev", "nextEl": ".btn-next"}, "thumbs": {"swiper": "#thumbs"}}'>
-                          <div class="swiper-wrapper">${galleryHtml}</div>
-                          <div class="position-absolute top-50 start-0 z-2 translate-middle-y ms-sm-2 ms-lg-3"><button type="button" class="btn btn-prev btn-icon btn-outline-secondary bg-body rounded-circle" aria-label="Prev"><i class="ci-chevron-left fs-lg"></i></button></div>
-                          <div class="position-absolute top-50 end-0 z-2 translate-middle-y me-sm-2 me-lg-3"><button type="button" class="btn btn-next btn-icon btn-outline-secondary bg-body rounded-circle" aria-label="Next"><i class="ci-chevron-right fs-lg"></i></button></div>
-                      </div>
-                      <div class="swiper swiper-load swiper-thumbs pt-2 mt-1" id="thumbs" data-swiper='{
-                          "loop": true,
-                          "spaceBetween": 12,
-                          "slidesPerView": 3,
-                          "watchSlidesProgress": true,
-                          "breakpoints": {
-                            "340": { "slidesPerView": 4 },
-                            "500": { "slidesPerView": 5 },
-                            "600": { "slidesPerView": 6 },
-                            "768": { "slidesPerView": 4 },
-                            "992": { "slidesPerView": 5 },
-                            "1200": { "slidesPerView": 6 }
-                          }
-                        }'>
-                          <div class="swiper-wrapper">${thumbsHtml}</div>
-                      </div>
+    async function fetchTrendingProducts() {
+      const wrapper = document.getElementById('trending-products-wrapper');
+      try {
+        const response = await fetch('http://localhost:3000/api/products?limit=8&random=true');
+        if (!response.ok) throw new Error('Could not fetch trending products.');
+        
+        const products = await response.json();
+        let trendingHtml = '';
+        products.forEach(product => {
+            const imageUrl = (product.image_urls ? product.image_urls.split(' ')[0] : 'https://via.placeholder.com/258x240?text=No+Image');
+            const price = parseFloat(product.price).toFixed(2);
+            trendingHtml += `
+            <div class="swiper-slide">
+              <div class="product-card animate-underline hover-effect-opacity bg-body rounded">
+                <div class="position-relative">
+                  <a class="d-block rounded-top overflow-hidden p-3 p-sm-4" href="product-general-info.html?sku=${product.sku}">
+                    <div class="ratio" style="--cz-aspect-ratio: calc(240 / 258 * 100%)">
+                      <img src="${imageUrl}" alt="${product.name}">
+                    </div>
+                  </a>
+                </div>
+                <div class="w-100 min-w-0 px-1 pb-2 px-sm-3 pb-sm-3">
+                  <h3 class="pb-1 mb-2">
+                    <a class="d-block fs-sm fw-medium text-truncate" href="product-general-info.html?sku=${product.sku}"><span class="animate-target">${product.name}</span></a>
+                  </h3>
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div class="h5 lh-1 mb-0">${price} zł</div>
+                    <button type="button" class="product-card-button btn btn-icon btn-secondary animate-slide-end ms-2" aria-label="Add to Cart" onclick="addToCart(${product.id}, 1)"><i class="ci-shopping-cart fs-base animate-target"></i></button>
                   </div>
-                  <div class="col-md-6 col-xl-5 offset-xl-1 pt-4">
-                      <div class="ps-md-4 ps-xl-0">
-                          <div class="pb-3 mb-2">
-                              <span class="fs-sm text-body-secondary">Brand: </span>
-                              <a class="fs-sm fw-medium text-decoration-none" href="#">${product.brand_name || 'N/A'}</a>
-                          </div>
-                          <div class="pb-3 mb-2">
-                              <span class="fs-sm text-body-secondary">Producer: </span>
-                              <span class="fs-sm fw-medium">${product.producer_name || 'N/A'}</span>
-                          </div>
-                          <div class="d-flex flex-wrap align-items-center mb-3">
-                              ${priceHtml} ${stockStatusHtml}
-                          </div>
-                          <div class="d-flex flex-wrap flex-sm-nowrap gap-3 mb-4">
-                              <div class="count-input flex-shrink-0">
-                                  <button type="button" class="btn btn-icon btn-lg" onclick="this.nextElementSibling.stepDown()"><i class="ci-minus"></i></button>
-                                  <input type="number" id="quantity-input" class="form-control form-control-lg" value="1" min="1" max="${product.stock_quantity || 1}" readonly>
-                                  <button type="button" class="btn btn-icon btn-lg" onclick="this.previousElementSibling.stepUp()"><i class="ci-plus"></i></button>
-                              </div>
-                              <button type="button" id="wishlist-btn" class="btn btn-icon btn-lg btn-secondary animate-pulse"><i class="ci-heart fs-lg animate-target"></i></button>
-                              <button type="button" id="add-to-cart-btn" class="btn btn-lg btn-primary w-100 animate-slide-end" ${product.stock_quantity === 0 ? 'disabled' : ''}>
-                                  <i class="ci-shopping-cart fs-lg animate-target ms-n1 me-2"></i>Add to cart
-                              </button>
-                          </div>
-                          <div class="accordion" id="infoAccordion">
-                              <div class="accordion-item"><h3 class="accordion-header" id="headingWarranty"><button type="button" class="accordion-button animate-underline collapsed" data-bs-toggle="collapse" data-bs-target="#warranty" aria-expanded="false" aria-controls="warranty"><span class="animate-target me-2">Warranty information</span></button></h3><div class="accordion-collapse collapse" id="warranty" aria-labelledby="headingWarranty" data-bs-parent="#infoAccordion"><div class="accordion-body">12 months of official manufacturer's warranty.</div></div></div>
-                          </div>
-                      </div>
-                  </div>`;
-              
-              infoContainer.innerHTML = `<h2 class="h3 pb-2 pb-md-3">Product Description</h2><div class="product-description">${descriptionHtml}</div>`;
-
-              stickyPreviewContainer.innerHTML = `
-                  <div class="border rounded p-3 p-lg-4">
-                      <div class="d-flex align-items-center mb-3">
-                          <div class="ratio ratio-1x1 flex-shrink-0" style="width: 110px"><img src="${uniqueImages[0]}" alt="${product.name}"></div>
-                          <div class="w-100 min-w-0 ps-2 ps-sm-3">
-                              <h4 class="fs-sm fw-medium mb-2 text-truncate">${product.name}</h4>
-                              <div class="h5 mb-0">${price.toFixed(2)} zł</div>
-                          </div>
-                      </div>
-                      <div class="d-flex gap-2 gap-lg-3">
-                          <button type="button" id="sticky-add-to-cart-btn" class="btn btn-primary w-100" ${product.stock_quantity === 0 ? 'disabled' : ''}><i class="ci-shopping-cart fs-base ms-n1 me-2"></i>Add to cart</button>
-                      </div>
-                  </div>`;
-
-              setTimeout(() => {
-                  if (window.theme && typeof window.theme.initSwiper === 'function') {
-                      theme.initSwiper();
-                  }
-                  
-                  document.getElementById('add-to-cart-btn').addEventListener('click', () => {
-                      const quantity = document.getElementById('quantity-input').value;
-                      addToCart(product.id, parseInt(quantity));
-                  });
-                   document.getElementById('sticky-add-to-cart-btn').addEventListener('click', () => {
-                      const quantity = document.getElementById('quantity-input').value;
-                      addToCart(product.id, parseInt(quantity));
-                  });
-                  document.getElementById('wishlist-btn').addEventListener('click', () => {
-                      addToWishlist(product.id);
-                  });
-              }, 200);
-
-          } catch (error) {
-              console.error('Error loading product details:', error);
-              mainContainer.innerHTML = `<p class="text-danger text-center col-12">${error.message}</p>`;
-              document.getElementById('product-name').textContent = 'Product Not Found';
+                </div>
+              </div>
+            </div>`;
+        });
+        wrapper.innerHTML = trendingHtml;
+        
+        // Manually initialize the Swiper instance *after* content is loaded.
+        new Swiper('#trending-swiper', {
+          slidesPerView: 2,
+          spaceBetween: 24,
+          loop: true,
+          navigation: {
+            prevEl: ".trending-prev",
+            nextEl: ".trending-next"
+          },
+          breakpoints: {
+            "768": { "slidesPerView": 3 },
+            "992": { "slidesPerView": 4 }
           }
+        });
+
+      } catch (error) {
+        console.error('Error fetching trending products:', error);
+        wrapper.innerHTML = `<p class="text-center text-danger col-12">Could not load trending products.</p>`;
       }
-    </script>
+    }
+
+    async function fetchProductDetails(sku) {
+        const mainContainer = document.getElementById('product-main-section');
+        const infoContainer = document.getElementById('product-info-col');
+        const stickyPreviewContainer = document.getElementById('sticky-preview');
+
+        try {
+            const response = await fetch(`http://localhost:3000/api/products/${sku}`);
+            if (!response.ok) throw new Error('Product not found or server error.');
+            
+            const product = await response.json();
+
+            document.title = `Kids Shop | ${product.name}`;
+            document.getElementById('product-name').textContent = product.name;
+            document.getElementById('breadcrumb-product-name').textContent = product.name;
+
+            const descriptionHtml = product.description || 'No description available.';
+            
+            const allImages = [...(product.image_urls ? product.image_urls.split(' ').filter(url => url) : [])];
+            const uniqueImages = [...new Set(allImages)].length > 0 ? [...new Set(allImages)] : ['https://via.placeholder.com/500x500?text=No+Image'];
+            
+            let galleryHtml = '';
+            let thumbsHtml = '';
+            uniqueImages.forEach(imgUrl => {
+                galleryHtml += `<div class="swiper-slide"><div class="ratio ratio-1x1"><img src="${imgUrl}" alt="${product.name}"></div></div>`;
+                thumbsHtml += `<div class="swiper-slide swiper-thumb"><div class="ratio ratio-1x1" style="max-width: 94px"><img src="${imgUrl}" class="swiper-thumb-img" alt="Thumbnail"></div></div>`;
+            });
+
+            const price = parseFloat(product.price);
+            const suggestedPrice = parseFloat(product.suggested_price);
+            const priceHtml = suggestedPrice > price
+                ? `<div class="h4 mb-0 me-3">${price.toFixed(2)} zł</div><del class="text-body-tertiary fs-lg">${suggestedPrice.toFixed(2)} zł</del>`
+                : `<div class="h4 mb-0 me-3">${price.toFixed(2)} zł</div>`;
+            const stockStatusHtml = product.stock_quantity > 0
+                ? `<div class="d-flex align-items-center text-success fs-sm ms-auto"><i class="ci-check-circle fs-base me-2"></i>Available (${product.stock_quantity})</div>`
+                : `<div class="d-flex align-items-center text-danger fs-sm ms-auto"><i class="ci-close-circle fs-base me-2"></i>Out of stock</div>`;
+
+            mainContainer.innerHTML = `
+                <div class="col-md-6">
+                    <div class="swiper main-swiper">
+                        <div class="swiper-wrapper">${galleryHtml}</div>
+                        <div class="position-absolute top-50 start-0 z-2 translate-middle-y ms-sm-2 ms-lg-3"><button type="button" class="btn btn-prev btn-icon btn-outline-secondary bg-body rounded-circle"><i class="ci-chevron-left fs-lg"></i></button></div>
+                        <div class="position-absolute top-50 end-0 z-2 translate-middle-y me-sm-2 me-lg-3"><button type="button" class="btn btn-next btn-icon btn-outline-secondary bg-body rounded-circle"><i class="ci-chevron-right fs-lg"></i></button></div>
+                    </div>
+                    <div class="swiper swiper-thumbs pt-2 mt-1" id="thumbs">
+                        <div class="swiper-wrapper">${thumbsHtml}</div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xl-5 offset-xl-1 pt-4">
+                    <div class="ps-md-4 ps-xl-0">
+                        <div class="pb-3 mb-2">
+                            <span class="fs-sm text-body-secondary">Brand: </span>
+                            <a class="fs-sm fw-medium text-decoration-none" href="#">${product.brand_name || 'N/A'}</a>
+                        </div>
+                        <div class="pb-3 mb-2">
+                            <span class="fs-sm text-body-secondary">Producer: </span>
+                            <span class="fs-sm fw-medium">${product.producer_name || 'N/A'}</span>
+                        </div>
+                        <div class="d-flex flex-wrap align-items-center mb-3">
+                            ${priceHtml} ${stockStatusHtml}
+                        </div>
+                        <div class="d-flex flex-wrap flex-sm-nowrap gap-3 mb-4">
+                            <div class="count-input flex-shrink-0">
+                                <button type="button" class="btn btn-icon btn-lg" onclick="this.nextElementSibling.stepDown()"><i class="ci-minus"></i></button>
+                                <input type="number" id="quantity-input" class="form-control form-control-lg" value="1" min="1" max="${product.stock_quantity || 1}" readonly>
+                                <button type="button" class="btn btn-icon btn-lg" onclick="this.previousElementSibling.stepUp()"><i class="ci-plus"></i></button>
+                            </div>
+                            <button type="button" class="btn btn-icon btn-lg btn-secondary animate-pulse" onclick="addToWishlist(${product.id})"><i class="ci-heart fs-lg animate-target"></i></button>
+                            <button type="button" class="btn btn-lg btn-primary w-100 animate-slide-end" ${product.stock_quantity === 0 ? 'disabled' : ''} onclick="addToCart(${product.id}, document.getElementById('quantity-input').value)">
+                                <i class="ci-shopping-cart fs-lg animate-target ms-n1 me-2"></i>Add to cart
+                            </button>
+                        </div>
+                         <div class="d-flex align-items-center pb-2">
+                            <h3 class="h6 mb-0">Shipping options</h3>
+                         </div>
+                         <table class="table table-borderless fs-sm mb-2">
+                             <tbody>
+                                 <tr>
+                                     <td class="py-2 ps-0">Pickup from the store</td>
+                                     <td class="py-2">Today</td>
+                                     <td class="text-body-emphasis fw-semibold text-end py-2 pe-0">Free</td>
+                                 </tr>
+                                 <tr>
+                                     <td class="py-2 ps-0">Pickup from postal offices</td>
+                                     <td class="py-2">Tomorrow</td>
+                                     <td class="text-body-emphasis fw-semibold text-end py-2 pe-0">25.00 zł</td>
+                                 </tr>
+                                 <tr>
+                                     <td class="py-2 ps-0">Delivery by courier</td>
+                                     <td class="py-2">2-3 days</td>
+                                     <td class="text-body-emphasis fw-semibold text-end py-2 pe-0">35.00 zł</td>
+                                 </tr>
+                             </tbody>
+                         </table>
+                         <div class="accordion" id="infoAccordion">
+                           <div class="accordion-item border-top">
+                             <h3 class="accordion-header" id="headingWarranty">
+                               <button type="button" class="accordion-button animate-underline collapsed" data-bs-toggle="collapse" data-bs-target="#warranty" aria-expanded="false" aria-controls="warranty">
+                                 <span class="animate-target me-2">Warranty information</span>
+                               </button>
+                             </h3>
+                             <div class="accordion-collapse collapse" id="warranty" aria-labelledby="headingWarranty" data-bs-parent="#infoAccordion">
+                               <div class="accordion-body">
+                                 <div class="alert d-flex alert-info mb-3" role="alert">
+                                   <i class="ci-check-shield fs-xl mt-1 me-2"></i>
+                                   <div class="fs-sm"><span class="fw-semibold">Warranty:</span> 12 months of official manufacturer's warranty. Exchange/return of the product within 14 days.</div>
+                                 </div>
+                               </div>
+                             </div>
+                           </div>
+                           <div class="accordion-item">
+                             <h3 class="accordion-header" id="headingPayment">
+                               <button type="button" class="accordion-button animate-underline collapsed" data-bs-toggle="collapse" data-bs-target="#payment" aria-expanded="false" aria-controls="payment">
+                                 <span class="animate-target me-2">Payment and credit</span>
+                               </button>
+                             </h3>
+                             <div class="accordion-collapse collapse" id="payment" aria-labelledby="headingPayment" data-bs-parent="#infoAccordion">
+                               <div class="accordion-body">Experience hassle-free transactions with our flexible payment options and credit facilities.</div>
+                             </div>
+                           </div>
+                         </div>
+                    </div>
+                </div>`;
+            
+            infoContainer.innerHTML = `<h2 class="h3 pb-2 pb-md-3">Product Description</h2><div class="product-description">${descriptionHtml}</div>`;
+
+            stickyPreviewContainer.innerHTML = `
+                <div class="border rounded p-3 p-lg-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="ratio ratio-1x1 flex-shrink-0" style="width: 110px"><img src="${uniqueImages[0]}" alt="${product.name}"></div>
+                        <div class="w-100 min-w-0 ps-2 ps-sm-3">
+                            <h4 class="fs-sm fw-medium mb-2 text-truncate">${product.name}</h4>
+                            <div class="h5 mb-0">${price.toFixed(2)} zł</div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 gap-lg-3">
+                        <button type="button" class="btn btn-primary w-100" ${product.stock_quantity === 0 ? 'disabled' : ''} onclick="addToCart(${product.id}, document.getElementById('quantity-input').value)"><i class="ci-shopping-cart fs-base ms-n1 me-2"></i>Add to cart</button>
+                    </div>
+                </div>`;
+            
+            // Manually initialize the main product gallery and thumbnails
+            const thumbsSwiper = new Swiper('#thumbs', {
+                loop: true,
+                spaceBetween: 12,
+                slidesPerView: 3,
+                watchSlidesProgress: true,
+                breakpoints: {
+                  "340": { "slidesPerView": 4 },
+                  "500": { "slidesPerView": 5 },
+                  "600": { "slidesPerView": 6 },
+                  "768": { "slidesPerView": 4 },
+                  "992": { "slidesPerView": 5 },
+                  "1200": { "slidesPerView": 6 }
+                }
+            });
+
+            new Swiper('.main-swiper', {
+                loop: true,
+                navigation: {
+                    prevEl: '.btn-prev',
+                    nextEl: '.btn-next',
+                },
+                thumbs: {
+                    swiper: thumbsSwiper,
+                },
+            });
+            
+        } catch (error) {
+            console.error('Error loading product details:', error);
+            mainContainer.innerHTML = `<p class="text-danger text-center col-12">${error.message}</p>`;
+            document.getElementById('product-name').textContent = 'Product Not Found';
+        }
+    }
+  </script>
   </body>
 </html>
